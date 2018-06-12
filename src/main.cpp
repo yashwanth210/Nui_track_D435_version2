@@ -68,6 +68,26 @@ SensorImage sensorImg;
 bool needToUpdateSelectedSkeleton = false;
 double doaProjected = -1;  // direction of arrival mapped to the camera bounds on a scale of 0.0 to 1.0
 int selectedSkeletonId = -1;
+Joint selectedSpineJoint;
+
+void controlMouse(Joint hand, Joint spine) {
+	Vector3 handPos = hand.real;
+	Vector3 spinePos = spine.real;
+
+	float x = (spinePos.x - handPos.x) / 250 + 0.3f;
+	float y = (spinePos.y - handPos.y) / 300 + 0.85f;
+	POINT curPos;
+	BOOL result = GetCursorPos(&curPos);
+
+	//Point curPos = MouseControl.GetCursorPosition();
+	int screenWidth = 1920;
+	int screenHeight = 1080;
+	int MousePosX = (int)(curPos.x + (x  * screenWidth - curPos.x));
+	int MousePosY = (int)(curPos.y + (y * screenHeight - curPos.y));
+
+	if (MousePosX>0 && MousePosY<1920 && MousePosY>0 && MousePosY<1080)
+		SetCursorPos(MousePosX, MousePosY);
+}
 
 
 /**
@@ -168,7 +188,8 @@ void OnSkeletonUpdate(SkeletonData::Ptr skeletonData)
 	*/
 	
 	Joint spine = skeleton.joints[JOINT_TORSO];
-	Joint handRight = skeleton.joints[JOINT_RIGHT_HAND];
+	selectedSpineJoint = spine;
+	/*Joint handRight = skeleton.joints[JOINT_RIGHT_HAND];
 	Joint handLeft = skeleton.joints[JOINT_LEFT_HAND];
 
 	Vector3 spinePos = spine.real;
@@ -205,98 +226,34 @@ void OnSkeletonUpdate(SkeletonData::Ptr skeletonData)
 		//std::cout << "{" << "\"type\": \"MouseCoords\"";
 		//std::cout << "[" << MousePosX << ", " << MousePosY << "]";
 		//std::cout << "}" << std::endl;
-		//coutMutex.unlock();
+		//coutMutex.unlock();*/
 	}
 }
-/*
-
-void OnSkeletonUpdate(SkeletonData::Ptr userSkeletons)
-{
-	if (userSkeletons->getNumSkeletons() == 0)
-		return;
-
-	auto skeletons = userSkeletons->getSkeletons();
-	//std::cout << "No of Skeletons : " << userSkeletons->getNumSkeletons()<< std::endl;
-
-	Skeleton skeleton1 = skeletons[0];
-
-	Joint spine = skeleton1.joints[JOINT_TORSO];
-	Joint handRight = skeleton1.joints[JOINT_RIGHT_HAND];
-	Joint handLeft = skeleton1.joints[JOINT_LEFT_HAND];
-
-	Vector3 spinePos = spine.real;
-	Vector3 handRightPos = handRight.real;
-	Vector3 handLeftPos = handLeft.real;
-
-	bool UseRightHand = true;
-
-	if (true || UseRightHand)
-	{
-		//float x = spinePos.x - handRightPos.x + 0.3f;
-		//float y = handRightPos.x - spinePos.x + 0.4f;
-		float x = (spinePos.x - handRightPos.x)/250 + 0.3f;
-		float y = (- handRightPos.y + spinePos.y)/300 + 0.6f ;
-		POINT curPos;
-		BOOL result = GetCursorPos(&curPos);
-
-        //Point curPos = MouseControl.GetCursorPosition();
-		float cursorSmoothing = 0.5f;
-		float smoothing = 1 - cursorSmoothing;
-		float mouseSensitivity = 0.5f;
-		int screenWidth = 1920;
-		int screenHeight = 1080;
-		int MousePosX = (int)(curPos.x + (x * mouseSensitivity * screenWidth - curPos.x) * smoothing);
-		int MousePosY = (int)(curPos.y + ((y + 0.25f) * mouseSensitivity * screenHeight - curPos.y) * smoothing);
-		
-		if(MousePosX>0 && MousePosY<1920 && MousePosY>0 && MousePosY<1080)
-		SetCursorPos(MousePosX, MousePosY);
-		
-		std::cout << "X: " << MousePosX << " Y: " << MousePosY <<std::endl;
-	}
-}*/
 
 void onHandUpdate(HandTrackerData::Ptr handData)
 {
     if (!handData)
     {
-        // No hand data
-        //std::cout << "No hand data" << std::endl;
         return;
-	}
-	else
-	{
-		//std::cout << handData << std::endl;
 	}
 
     auto userHands = handData->getUsersHands();
-	int number = handData->getNumUsers();
-    if (userHands.empty())
-    {
-		std::cout << "empty hand data" << std::endl;
-        // No user hands
-        return;
-	}
-	else
-	{
-		//std::cout << userHands[0].userId << std::endl;
-	}
-	std::cout <<"Number of people: " << number;
-	Hand::Ptr rightHand = userHands[0].rightHand;
-    if (!rightHand)
-    {
-        // No right hand
-        //std::cout << "Right hand of the first user is not found" << std::endl;
-        return;
-    }
 
-    /*std::cout << std::fixed << std::setprecision(3);
-    std::cout << "Right hand position: "
-                 "x = " << rightHand->xReal << ", "
-                 "y = " << rightHand->yReal << ", "
-                 "z = " << rightHand->zReal << std::endl;
-	std::cout << "Hand click: " << rightHand->click << std::endl;
-	std::cout << "Hand pressure: " << rightHand->pressure << std::endl;*/
-	printHandDataAsJSON(rightHand);
+	for each (UserHands hands in userHands) {
+		if (hands.userId == selectedSkeletonId) {
+			Hand::Ptr rightHand = userHands[0].rightHand;
+			if (!rightHand)
+			{
+				return;
+			}
+
+			controlMouse(rightHand, spine);
+
+			return;
+		}
+	}
+
+	//printHandDataAsJSON(rightHand);
 }
 
 int main(int argc, char* argv[])
