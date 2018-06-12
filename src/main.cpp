@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "JointSmootherEKF.h"
-#include "SensorImage.h"
+//#include "SensorImage.h"
 
 using namespace tdv::nuitrack;
 int Direction_of_sound = 120;
@@ -64,7 +64,7 @@ void onSkeletonUpdate(SkeletonTracker::Ptr SkeletonData)
 
 std::mutex coutMutex;
 
-SensorImage sensorImg;
+//SensorImage sensorImg;
 
 bool needToUpdateSelectedSkeleton = false;
 double doaProjected = -1;  // direction of arrival mapped to the camera bounds on a scale of 0.0 to 1.0
@@ -73,14 +73,13 @@ Joint selectedSpineJoint;
 
 JointSmootherEKF spineEKF;
 
-void controlMouse(Joint hand, Joint spine) {
-	Vector3 handPos = hand.real;
+void controlMouse(Hand::Ptr hand, Joint spine) {
 	Vector3 spinePosTmp = spine.real;
 	double spinePos[] = {spinePosTmp.x, spinePosTmp.y, spinePosTmp.z};
 	spineEKF.step(spinePos);
 
-	float x = (spinePos[0] - handPos.x) / 250 + 0.3f;
-	float y = (spinePos[1] - handPos.y) / 300 + 0.85f;
+	float x = (spinePos[0] - hand->xReal) / 250 + 0.3f;
+	float y = (spinePos[1] - hand->yReal) / 300 + 0.85f;
 	POINT curPos;
 	BOOL result = GetCursorPos(&curPos);
 
@@ -232,7 +231,7 @@ void OnSkeletonUpdate(SkeletonData::Ptr skeletonData)
 		//std::cout << "[" << MousePosX << ", " << MousePosY << "]";
 		//std::cout << "}" << std::endl;
 		//coutMutex.unlock();*/
-	}
+	//}
 }
 
 void onHandUpdate(HandTrackerData::Ptr handData)
@@ -252,7 +251,7 @@ void onHandUpdate(HandTrackerData::Ptr handData)
 				return;
 			}
 
-			controlMouse(rightHand, spine);
+			controlMouse(rightHand, selectedSpineJoint);
 
 			return;
 		}
