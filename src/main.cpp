@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "JointSmootherEKF.h"
 #include "SensorImage.h"
 
 using namespace tdv::nuitrack;
@@ -70,12 +71,16 @@ double doaProjected = -1;  // direction of arrival mapped to the camera bounds o
 int selectedSkeletonId = -1;
 Joint selectedSpineJoint;
 
+JointSmootherEKF spineEKF;
+
 void controlMouse(Joint hand, Joint spine) {
 	Vector3 handPos = hand.real;
-	Vector3 spinePos = spine.real;
+	Vector3 spinePosTmp = spine.real;
+	double spinePos[] = {spinePosTmp.x, spinePosTmp.y, spinePosTmp.z};
+	spineEKF.step(spinePos);
 
-	float x = (spinePos.x - handPos.x) / 250 + 0.3f;
-	float y = (spinePos.y - handPos.y) / 300 + 0.85f;
+	float x = (spinePos[0] - handPos.x) / 250 + 0.3f;
+	float y = (spinePos[1] - handPos.y) / 300 + 0.85f;
 	POINT curPos;
 	BOOL result = GetCursorPos(&curPos);
 
