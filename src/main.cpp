@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include "SensorImage.h"
+
 using namespace tdv::nuitrack;
 int Direction_of_sound = 120;
 
@@ -60,6 +62,9 @@ void onSkeletonUpdate(SkeletonTracker::Ptr SkeletonData)
 
 
 std::mutex coutMutex;
+
+SensorImage sensorImg;
+
 bool needToUpdateSelectedSkeleton = false;
 double doaProjected = -1;  // direction of arrival mapped to the camera bounds on a scale of 0.0 to 1.0
 int selectedSkeletonId = -1;
